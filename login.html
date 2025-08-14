@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GIPER X</title>
+  <meta name="description" content="GiperX">
+  <meta name="author" content="GiperX">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: url('images/bak.jpg') no-repeat center center/cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: white;
+    }
+    #controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px 20px;
+      background-color: rgba(0,0,0,0.8);
+      color: red;
+      font-size: 16px;
+      border-radius: 5px;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+    #controls.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .container {
+      text-align: center;
+      background: rgba(0,0,0,0.4);
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(255,255,255,0.5);
+    }
+    .logo img {
+      width: 120px;
+      height: auto;
+      margin-bottom: 20px;
+    }
+    .input-field {
+      display: block;
+      width: 90%;
+      max-width: 300px;
+      padding: 10px;
+      margin: 10px auto 20px;
+      font-size: 16px;
+      text-align: center;
+      color: white;
+      background: transparent;
+      border: 2px solid white;
+      border-radius: 10px;
+      outline: none;
+    }
+    .input-field::placeholder {
+      color: rgba(255,255,255,0.6);
+    }
+    button, a {
+      display: block;
+      width: 90%;
+      max-width: 300px;
+      padding: 15px;
+      margin: 10px auto;
+      font-size: 16px;
+      text-decoration: none;
+      text-align: center;
+      color: white;
+      background: transparent;
+      border: 2px solid white;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover, a:hover {
+      background: rgba(255,255,255,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="images/logo.png" alt="Logo">
+    </div>
+    <input type="text" class="input-field" id="id" placeholder="ID">
+    <input type="password" class="input-field" id="activationCode" placeholder="Key">
+    <button id="loginBtn">Login</button>
+    <a href="https://t.me/appleking077s" target="_blank">TELEGRAM CHANNEL</a>
+  </div>
+
+  <div id="controls"></div>
+
+  <!-- Firebase JS SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+  <script>
+    // ✅ Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyB1_XCbC777hKwxlilhMeq5Hpty1dvDT1I",
+      authDomain: "giper-8fd92.firebaseapp.com",
+      databaseURL: "https://giper-8fd92-default-rtdb.firebaseio.com",
+      projectId: "giper-8fd92",
+      storageBucket: "giper-8fd92.firebasestorage.app",
+      messagingSenderId: "485740337398",
+      appId: "1:485740337398:web:YOUR_WEB_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // 🔹 Toast function
+    function showToast(message) {
+      const toast = document.getElementById('controls');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 4000);
+    }
+
+    // 🔹 Login click event
+    document.getElementById('loginBtn').addEventListener('click', function () {
+      const id = document.getElementById('id').value.trim();
+      const code = document.getElementById('activationCode').value.trim();
+
+      if (!id) { showToast('Please enter your ID'); return; }
+      if (!code) { showToast('Please enter your Key'); return; }
+
+      db.ref('users/' + code).once('value').then(snapshot => {
+        if (!snapshot.exists()) {
+          showToast('Invalid or non-existent Key');
+          return;
+        }
+
+        const data = snapshot.val();
+        const now = Date.now();
+
+        if (now > data.expires) {
+          showToast('Key expired');
+          return;
+        }
+
+        if (data.id && data.id !== id) {
+          showToast('key is already using');
+          return;
+        }
+
+        db.ref('users/' + code + '/id').set(id);
+
+        // Successful login
+        window.location.href = 'index.html?id=' + encodeURIComponent(id) + '&key=' + encodeURIComponent(code);
+      }).catch(error => {
+        console.error(error);
+        showToast('this key Incorrect');
+      });
+    });
+
+    // Enter key
+    document.querySelectorAll('.input-field').forEach(el => {
+      el.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          document.getElementById('loginBtn').click();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
